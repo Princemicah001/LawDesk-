@@ -1,0 +1,8 @@
+{
+  "name": "LawDesk",
+  "description": "Master Kenyan Law Daily. Complete offline libraries, premium daily briefs, mock quizzes, milestones, and high-end AI tutoring.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
