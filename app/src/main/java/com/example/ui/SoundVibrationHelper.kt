@@ -13,12 +13,15 @@ object SoundVibrationHelper {
     private const val TAG = "SoundVibrationHelper"
     private var toneGenerator: ToneGenerator? = null
 
-    init {
-        try {
-            toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize ToneGenerator", e)
+    private fun getOrInitToneGenerator(): ToneGenerator? {
+        if (toneGenerator == null) {
+            try {
+                toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 80)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize ToneGenerator", e)
+            }
         }
+        return toneGenerator
     }
 
     private fun getVibrator(context: Context): Vibrator? {
@@ -57,10 +60,7 @@ object SoundVibrationHelper {
 
         // Correct Answer Tone (Uplifting quick chords/beeps)
         try {
-            if (toneGenerator == null) {
-                toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            }
-            toneGenerator?.startTone(ToneGenerator.TONE_PROP_ACK, 220)
+            getOrInitToneGenerator()?.startTone(ToneGenerator.TONE_PROP_ACK, 220)
         } catch (e: Exception) {
             Log.e(TAG, "Play correct tone failed", e)
         }
@@ -89,10 +89,7 @@ object SoundVibrationHelper {
 
         // Wrong Answer Tone (Low buzz double flat pitch)
         try {
-            if (toneGenerator == null) {
-                toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            }
-            toneGenerator?.startTone(ToneGenerator.TONE_PROP_NACK, 350)
+            getOrInitToneGenerator()?.startTone(ToneGenerator.TONE_PROP_NACK, 350)
         } catch (e: Exception) {
             Log.e(TAG, "Play wrong tone failed", e)
         }
@@ -117,10 +114,7 @@ object SoundVibrationHelper {
         }
 
         try {
-            if (toneGenerator == null) {
-                toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            }
-            toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 50)
+            getOrInitToneGenerator()?.startTone(ToneGenerator.TONE_PROP_BEEP, 50)
         } catch (e: Exception) {
             Log.e(TAG, "Play tick tone failed", e)
         }
@@ -145,9 +139,6 @@ object SoundVibrationHelper {
         }
 
         try {
-            if (toneGenerator == null) {
-                toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            }
             // Generate delightful ascending musical tone based on progress
             val ratio = if (maxVal > 0) currentVal.toFloat() / maxVal.toFloat() else 0.5f
             val toneType = when {
@@ -159,7 +150,7 @@ object SoundVibrationHelper {
                 ratio < 0.90f -> ToneGenerator.TONE_DTMF_6
                 else -> ToneGenerator.TONE_DTMF_9
             }
-            toneGenerator?.startTone(toneType, 40)
+            getOrInitToneGenerator()?.startTone(toneType, 40)
         } catch (e: Exception) {
             Log.e(TAG, "Play xpTick tone failed", e)
         }

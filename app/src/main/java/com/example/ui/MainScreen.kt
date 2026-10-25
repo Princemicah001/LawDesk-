@@ -120,16 +120,15 @@ fun SplashScreen(onDismiss: () -> Unit) {
     var visible by remember { mutableStateOf(false) }
     val alpha by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
+        animationSpec = tween(durationMillis = 400, easing = LinearEasing),
         label = "SplashFadeSpec"
     )
 
     LaunchedEffect(Unit) {
-        delay(300)
         visible = true
-        delay(3800)
+        delay(1200)
         visible = false
-        delay(1000)
+        delay(250)
         onDismiss()
     }
 
@@ -137,6 +136,7 @@ fun SplashScreen(onDismiss: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF6F1E3)) // Organic warm cream background
+            .clickable { onDismiss() }
             .testTag("splash_screen"),
         contentAlignment = Alignment.Center
     ) {
@@ -423,11 +423,28 @@ fun MainScreen(viewModel: MainViewModel) {
                                 .fillMaxSize()
                                 .padding(innerPadding)
                         ) {
+                            // Standard tabs
                             when (currentTab) {
                                 AppTab.HOME -> HomeScreen(viewModel = viewModel)
-                                AppTab.LIBRARY -> LibraryScreen(viewModel = viewModel)
                                 AppTab.AI -> AITutorScreen(viewModel = viewModel)
                                 AppTab.PROFILE -> ProfileScreen(viewModel = viewModel)
+                                AppTab.LIBRARY -> Unit
+                            }
+
+                            // Pre-warmed persistent Library WebView for instant 0ms access with zero reloading
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer {
+                                        val isSelected = currentTab == AppTab.LIBRARY
+                                        alpha = if (isSelected) 1f else 0f
+                                        translationX = if (isSelected) 0f else 40000f
+                                    }
+                            ) {
+                                LibraryHtmlScreen(
+                                    viewModel = viewModel,
+                                    isTabVisible = currentTab == AppTab.LIBRARY
+                                )
                             }
                         }
                     }

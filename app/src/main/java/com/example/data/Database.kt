@@ -110,6 +110,12 @@ interface LawDao {
     @Query("SELECT COUNT(*) FROM statutes")
     suspend fun getStatutesCount(): Int
 
+    @Query("SELECT COUNT(*) FROM statutes WHERE category = :category")
+    suspend fun getStatutesCountByCategory(category: String): Int
+
+    @Query("SELECT COUNT(*) FROM statutes WHERE category != 'CONSTITUTION'")
+    suspend fun getNonConstitutionStatutesCount(): Int
+
     @Query("SELECT * FROM statutes WHERE id = :id")
     suspend fun getStatuteById(id: String): Statute?
 

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
@@ -716,12 +717,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        try {
-            _maxims.value = repository.loadMaximsFromAssets()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _maxims.value = repository.loadMaximsFromAssets()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             try {
                 repository.initializeDatabase()
             } catch (e: Exception) {
@@ -743,16 +744,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 e.printStackTrace()
             }
             try {
-                syncDatabaseOnline(isAutoSync = true)
-            } catch (e: Exception) {
-                e.printStackTrace()
+                com.example.data.LocalLegalDataManager.getActsIndex(application)
+                com.example.data.LocalLegalDataManager.getCasesIndex(application)
+                com.example.data.LocalLegalDataManager.getConstitutionTOC(application)
+            } catch (_: Exception) {}
+            // Fetch live eLegal cases in background if connected (non-blocking)
+            if (NetworkMonitor.isConnected()) {
+                try {
+                    repository.fetchInitialELegalData()
+                } catch (e: Exception) {
+                    android.util.Log.d("MainViewModel", "Background eLegal data fetch skipped: ${e.message}")
+                }
             }
         }
 
-        // Seamless auto-search: when search query is typed, automatically search through eLegal API immediately
-        viewModelScope.launch {
+        // Seamless auto-search: when search query is typed, automatically search through eLegal API
+        viewModelScope.launch(Dispatchers.IO) {
             _searchQuery
-                .debounce(300L)
+                .debounce(350L)
                 .distinctUntilChanged()
                 .collectLatest { query ->
                     val trimmed = query.trim()
